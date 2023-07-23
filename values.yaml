@@ -16,6 +16,7 @@ deployment:
   limit:
     cpu: 300m
     memory: 300Mi
+  serviceAccountName: dashboard
 
 configmap:
   nginx:
