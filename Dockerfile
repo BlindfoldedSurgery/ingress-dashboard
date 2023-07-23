@@ -16,7 +16,6 @@ RUN CGOENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s -extldflags=-s
 FROM scratch
 
 COPY --from=builder /go/bin/ingress-dashboard /go/bin/ingress-dashboard
-COPY --from=builder /go/src/torbencarstens/ingress-dashboard/go-templates /go/bin/go-templates
 
 COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
