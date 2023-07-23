@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingress dashboard</title>
+
+    <style>
+        .annotations, .labels {
+            margin-left: 20px;
+        }
+
+        td {
+            border: 1px solid #000;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+        .ingress-name, .namespace {
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .ingress-item {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>Ingresses</h1>
+{{ range $namespace, $ingresses := . }}
+<details open="">
+    <summary>
+        <span class="namespace">{{ $namespace }}</span>
+    </summary>
+
+    {{ range $ingresses }}
+    <details class="ingress-item" open="">  <!-- TODO: shouldn't be open by default -->
+        <summary>
+            <span class="ingress-name">
+                <!--suppress HtmlUnknownTarget -->
+                <a href="{{ .Link }}" class="ingress-link">{{ .SafeName }}</a>
+            </span>
+        </summary>
+
+        <div class="annotations">
+            <h4>Annotations</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range $k, $v := .SafeAnnotations }}
+                <tr>
+                    <td>{{ $k }}</td>
+                    <td>{{ $v }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="labels">
+            <h4>Labels</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range $k, $v := .Labels }}
+                <tr>
+                    <td>{{ $k }}</td>
+                    <td>{{ $v }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </details>
+
+    {{ end }}
+
+</details>
+
+{{ end }}
+</body>
+</html>

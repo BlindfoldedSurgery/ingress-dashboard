@@ -1,0 +1,35 @@
+namespace: mgmt
+
+deployment:
+  name: dashboard
+  image: ghcr.io/torbencarstens/dashboard:__TAG__
+  imagePullPolicy: IfNotPresent
+  revisionHistoryLimit: 1
+  replicas: 1
+  ports:
+  - 8080
+  labels:
+    app: dashboard
+  requests:
+    cpu: 100m
+    memory: 100Mi
+  limit:
+    cpu: 300m
+    memory: 300Mi
+
+configmap:
+  nginx:
+    name: dashboard
+
+service:
+  name: dashboard
+  port: 80
+  targetPort: 8080
+  appSelector: dashboard
+
+ingress:
+  hosts:
+    - dashboard.carstens.tech
+  secret: tls-dashboard
+  issuer: letsencrypt-issuer
+  name: dashboard

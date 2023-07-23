@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ingress-dashboard
+description: show concise information about all ingresses in cluster
+type: application
+version: 0.1.0
+icon: https://carstens.tech/helm_icon.png

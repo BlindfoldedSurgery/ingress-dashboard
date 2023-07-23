@@ -1,0 +1,52 @@
+name: Build and deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: "helm lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: update tag in manifest.yml
+        run: sed -i -e "s#__TAG__#${GITHUB_SHA}#g" values.yaml
+      - uses: OpenAlcoholics/github-action-helm@v0.2.0
+        with:
+          raw_command: lint --strict
+
+  build_push_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the tagged Docker image
+        run: docker build -t ghcr.io/torbencarstens/dashboard:${GITHUB_SHA} .
+      - name: Push the tagged Docker image
+        run: docker push ghcr.io/torbencarstens/dashboard:${GITHUB_SHA}
+
+  deploy:
+    name: "Publish to k8s"
+    runs-on: ubuntu-latest
+    needs: [build_push_docker, lint]
+    steps:
+      - uses: actions/checkout@v3
+      - name: update password in manifest.yml
+        run: sed -i -e "s#__TAG__#${GITHUB_SHA}#g" values.yaml
+      - name: install helm chart
+        uses: OpenAlcoholics/github-action-helm@v0.2.0
+        with:
+          subcommand: upgrade
+          ref: .
+          release_name: dashboard
+          namespace: mgmt
+          atomic: true
+          install: true
+          kubeconfig: ${{ secrets.KUBECONFIG_RAW }}
