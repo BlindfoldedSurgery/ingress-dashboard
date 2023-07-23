@@ -36,6 +36,9 @@
     {{ range $ingresses }}
     <details class="ingress-item">
         <summary>
+            {{ if .LinkIsSafe }}
+            <img alt="tls sign" src="/public/images/lock.svg" width="12" height="16" />
+            {{ end }}
             <span class="ingress-name">
                 <!--suppress HtmlUnknownTarget -->
                 <a href="{{ .Link }}" class="ingress-link">{{ .SafeName }}</a>

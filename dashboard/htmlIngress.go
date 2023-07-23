@@ -11,8 +11,25 @@ type HTMLIngress struct {
 	v1.Ingress
 }
 
+func (i HTMLIngress) LinkIsSafe() bool {
+	host, _ := i.getMainHostPath()
+
+	return utils.Any(i.Spec.TLS, func(item v1.IngressTLS) bool {
+		return utils.Contains(item.Hosts, host)
+	})
+}
+
+func (i HTMLIngress) getMainHostPath() (string, string) {
+	return i.Spec.Rules[0].Host, i.Spec.Rules[0].HTTP.Paths[0].Path
+}
+
 func (i HTMLIngress) buildTitleLink() string {
-	return fmt.Sprintf("https://%s%s", i.Spec.Rules[0].Host, i.Spec.Rules[0].HTTP.Paths[0].Path)
+	host, path := i.getMainHostPath()
+	scheme := "http"
+	if i.LinkIsSafe() {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://%s%s", scheme, host, path)
 }
 
 func (i HTMLIngress) SafeName() string {

@@ -21,5 +21,6 @@ COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY go-templates/ /go-templates/
+COPY public/ /public/
 
 ENTRYPOINT ["/go/bin/ingress-dashboard"]

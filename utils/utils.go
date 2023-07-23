@@ -61,3 +61,13 @@ func TransformValuesArray[K comparable, VI any, VO any](m map[K][]VI, f func(VI)
 
 	return mNew
 }
+
+func Any[T any](data []T, f func(T) bool) bool {
+	for _, value := range data {
+		if f(value) {
+			return true
+		}
+	}
+
+	return false
+}

@@ -90,6 +90,7 @@ func serveIngresses(c *gin.Context) {
 		log.Fatal().Err(err).Msg("failed to retrieve ingressess in cluster")
 	}
 	templatePath := "go-templates/index.html"
+
 	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		log.Error().Err(err).Str("path", templatePath)
@@ -122,6 +123,7 @@ func main() {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{})
 	})
+	r.Static("/public", "./public")
 
 	log.Fatal().Err(r.Run()).Msg("failed to run http server")
 }
