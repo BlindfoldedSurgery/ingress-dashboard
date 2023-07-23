@@ -1,17 +1,20 @@
-FROM python:3.11 as builder
+FROM golang:1.20-alpine3.18 AS builder
 
-WORKDIR /app
+RUN apk update && \
+    apk add --no-cache git
 
-ENV PYTHONUNBUFFERED 1
+WORKDIR $GOPATH/src/torbencarstens/ingress-dashboard
+COPY . .
 
-ADD .git/ .git/
-ADD docs/ docs/
-ADD requirements.txt requirements.txt
-ADD mkdocs.yml mkdocs.yml
+RUN go get -d -v
+RUN CGOENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s -extldflags=-static" -o /go/bin/ingress-dashboard
 
-RUN pip install -r requirements.txt
-RUN mkdocs build
+FROM scratch
 
-FROM nginxinc/nginx-unprivileged:1.25.1
+COPY --from=builder /go/bin/ingress-dashboard /go/bin/ingress-dashboard
+COPY --from=builder /go/src/torbencarstens/ingress-dashboard/go-templates /go/bin/go-templates
 
-COPY --from=builder /app/site /usr/share/nginx/html
+COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+ENTRYPOINT ["/go/bin/ingress-dashboard"]
