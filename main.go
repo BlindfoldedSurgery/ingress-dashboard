@@ -96,7 +96,17 @@ func serveIngresses(c *gin.Context) {
 	}
 	data := utils.TransformValuesArray(ingresses, dashboard.NewHTMLIngress)
 
-	if err = tmpl.Execute(c.Writer, data); err != nil {
+	stat, err := os.Stat(templatePath)
+	if err != nil {
+		log.Debug().Err(err).Str("templatePath", templatePath).Msg("failed to stat template file")
+	}
+	log.Debug().
+		Any("data", data).
+		Any("c", c).
+		Str("stat", stat.Name()).
+		Msg("")
+	err = tmpl.Execute(c.Writer, data)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "failed to write template",
 			"error":   err.Error(),
