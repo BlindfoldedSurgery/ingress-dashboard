@@ -77,7 +77,6 @@ func getIngresses() (map[string][]v1.Ingress, error) {
 
 		ingresses[namespace.Name] = make([]v1.Ingress, 0)
 		ingresses[namespace.Name] = ingressesInNamespace.Items
-		break
 	}
 
 	return ingresses, err
