@@ -100,7 +100,7 @@ func getIngresses(count int64) (map[string][]v1.Ingress, error) {
 }
 
 func serveIngresses(c *gin.Context) {
-	rawCount := c.DefaultQuery("count", "10")
+	rawCount := c.DefaultQuery("count", "0")
 	count, _ := strconv.ParseInt(rawCount, 10, 32)
 	if count == 0 {
 		count = math.MaxInt64
