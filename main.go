@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"html/template"
 	"ingress-dashboard/dashboard"
@@ -114,6 +115,8 @@ func serveIngresses(c *gin.Context) {
 }
 
 func main() {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
 	r := gin.Default()
 	r.GET("/", serveIngresses)
 	r.GET("/health", func(c *gin.Context) {
