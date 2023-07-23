@@ -22,5 +22,6 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY go-templates/ /go-templates/
 COPY public/ /public/
+ENV GIN_MODE=release
 
 ENTRYPOINT ["/go/bin/ingress-dashboard"]
