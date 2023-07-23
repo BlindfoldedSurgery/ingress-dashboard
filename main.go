@@ -14,8 +14,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"math"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type KubernetesAccessViolation struct {
@@ -48,7 +50,7 @@ func getConfig() (*rest.Config, error) {
 	return config, err
 }
 
-func getIngresses() (map[string][]v1.Ingress, error) {
+func getIngresses(count int64) (map[string][]v1.Ingress, error) {
 	ingresses := make(map[string][]v1.Ingress)
 
 	config, err := getConfig()
@@ -60,14 +62,18 @@ func getIngresses() (map[string][]v1.Ingress, error) {
 		return ingresses, err
 	}
 
+	listOptions := metav1.ListOptions{
+		Limit: count,
+	}
 	namespaces, err := clientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return ingresses, errors.Join(err, KubernetesAccessViolation{
 			Msg: "failed to list namespaces",
 		})
 	}
+	var ingressCount int64 = 0
 	for _, namespace := range namespaces.Items {
-		ingressesInNamespace, err := clientSet.NetworkingV1().Ingresses(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+		ingressesInNamespace, err := clientSet.NetworkingV1().Ingresses(namespace.Name).List(context.TODO(), listOptions)
 		if err != nil {
 			log.Error().Err(err).Str("namespace", namespace.Name).Msg("failed to list ingress")
 			continue
@@ -75,16 +81,32 @@ func getIngresses() (map[string][]v1.Ingress, error) {
 		if len(ingressesInNamespace.Items) == 0 {
 			continue
 		}
+		if ingressCount < count {
+			ingresses[namespace.Name] = make([]v1.Ingress, 0)
+		} else {
+			break
+		}
 
-		ingresses[namespace.Name] = make([]v1.Ingress, 0)
-		ingresses[namespace.Name] = ingressesInNamespace.Items
+		ingressCount += int64(len(ingressesInNamespace.Items))
+		if ingressCount <= count {
+			ingresses[namespace.Name] = ingressesInNamespace.Items
+		} else {
+			ingresses[namespace.Name] = ingressesInNamespace.Items[:ingressCount-count]
+		}
+
 	}
 
 	return ingresses, err
 }
 
 func serveIngresses(c *gin.Context) {
-	ingresses, err := getIngresses()
+	rawCount := c.DefaultQuery("count", "10")
+	count, _ := strconv.ParseInt(rawCount, 10, 32)
+	if count == 0 {
+		count = math.MaxInt64
+	}
+
+	ingresses, err := getIngresses(count)
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to retrieve ingressess in cluster")
