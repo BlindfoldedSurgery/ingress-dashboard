@@ -21,6 +21,17 @@ func FilterM[K comparable, V any](data map[K]V, f func(K, V) bool) map[K]V {
 	return out
 }
 
+func FilterArr[T any](data []T, f func(T) bool) []T {
+	out := make([]T, 0)
+	for _, value := range data {
+		if f(value) {
+			out = append(out, value)
+		}
+	}
+
+	return out
+}
+
 func Mapf[TI any, TO any](in []TI, f func(TI) TO) []TO {
 	out := make([]TO, 0)
 	for _, element := range in {

@@ -9,7 +9,8 @@ import (
 	"html/template"
 	"ingress-dashboard/dashboard"
 	"ingress-dashboard/utils"
-	v1 "k8s.io/api/networking/v1"
+	v1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -18,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type KubernetesAccessViolation struct {
@@ -50,8 +52,8 @@ func getConfig() (*rest.Config, error) {
 	return config, err
 }
 
-func getIngresses(count int64) (map[string][]v1.Ingress, error) {
-	ingresses := make(map[string][]v1.Ingress)
+func getIngresses(count int64, namespaceNames []string) (map[string][]netv1.Ingress, error) {
+	ingresses := make(map[string][]netv1.Ingress)
 
 	config, err := getConfig()
 	if err != nil {
@@ -72,7 +74,15 @@ func getIngresses(count int64) (map[string][]v1.Ingress, error) {
 		})
 	}
 	var ingressCount int64 = 0
-	for _, namespace := range namespaces.Items {
+
+	filteredNamespaces := namespaces.Items
+	if len(namespaceNames) != 0 {
+		filteredNamespaces = utils.FilterArr(namespaces.Items, func(namespace v1.Namespace) bool {
+			return utils.Contains(namespaceNames, namespace.Name)
+		})
+	}
+
+	for _, namespace := range filteredNamespaces {
 		ingressesInNamespace, err := clientSet.NetworkingV1().Ingresses(namespace.Name).List(context.TODO(), listOptions)
 		if err != nil {
 			log.Error().Err(err).Str("namespace", namespace.Name).Msg("failed to list ingress")
@@ -82,7 +92,7 @@ func getIngresses(count int64) (map[string][]v1.Ingress, error) {
 			continue
 		}
 		if ingressCount < count {
-			ingresses[namespace.Name] = make([]v1.Ingress, 0)
+			ingresses[namespace.Name] = make([]netv1.Ingress, 0)
 		} else {
 			break
 		}
@@ -101,12 +111,13 @@ func getIngresses(count int64) (map[string][]v1.Ingress, error) {
 
 func serveIngresses(c *gin.Context) {
 	rawCount := c.DefaultQuery("count", "0")
+	namespaces := c.DefaultQuery("namespaces", "")
 	count, _ := strconv.ParseInt(rawCount, 10, 32)
 	if count == 0 {
 		count = math.MaxInt64
 	}
 
-	ingresses, err := getIngresses(count)
+	ingresses, err := getIngresses(count, strings.Split(namespaces, ","))
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to retrieve ingressess in cluster")
