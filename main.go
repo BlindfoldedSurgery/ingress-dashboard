@@ -111,13 +111,16 @@ func getIngresses(count int64, namespaceNames []string) (map[string][]netv1.Ingr
 
 func serveIngresses(c *gin.Context) {
 	rawCount := c.DefaultQuery("count", "0")
-	namespaces := c.DefaultQuery("namespaces", "")
+	rawNamespaces := c.DefaultQuery("namespaces", "")
 	count, _ := strconv.ParseInt(rawCount, 10, 32)
 	if count == 0 {
 		count = math.MaxInt64
 	}
+	namespaces := utils.FilterArr(strings.Split(rawNamespaces, ","), func(ns string) bool {
+		return len(ns) > 0
+	})
 
-	ingresses, err := getIngresses(count, strings.Split(namespaces, ","))
+	ingresses, err := getIngresses(count, namespaces)
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to retrieve ingressess in cluster")
