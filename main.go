@@ -107,6 +107,9 @@ func serveIngresses(c *gin.Context) {
 func main() {
 	r := gin.Default()
 	r.GET("/", serveIngresses)
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{})
+	})
 
 	log.Fatal().Err(r.Run()).Msg("failed to run http server")
 }

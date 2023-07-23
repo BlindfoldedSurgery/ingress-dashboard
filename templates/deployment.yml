@@ -28,6 +28,10 @@ spec:
         - containerPort: {{ $port }}
           protocol: TCP
         {{- end }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.deployment.livenessProbe.http.path }}
+            port: {{ .Values.service.targetPort }}
         resources:
           requests:
             cpu: {{ .Values.deployment.requests.cpu }}

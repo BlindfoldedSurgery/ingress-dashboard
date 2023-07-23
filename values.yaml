@@ -17,6 +17,9 @@ deployment:
     cpu: 300m
     memory: 300Mi
   serviceAccountName: dashboard
+  livenessProbe:
+    http:
+      path: "/health"
 
 configmap:
   nginx:
