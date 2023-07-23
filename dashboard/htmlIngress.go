@@ -37,13 +37,22 @@ func (i HTMLIngress) SafeName() string {
 }
 
 func (i HTMLIngress) SafeAnnotations() map[string]string {
-	forbiddenAnnotations := []string{"field.cattle.io/publicEndpoints", "kubectl.kubernetes.io/last-applied-configuration"}
+	forbiddenAnnotationKeys := []string{
+		"field.cattle.io/publicEndpoints",
+		"kubectl.kubernetes.io/last-applied-configuration",
+	}
 
-	filtered := utils.FilterM(i.Annotations, func(key, value string) bool {
-		return !utils.Contains(forbiddenAnnotations, key)
+	return utils.FilterM(i.Annotations, func(key, value string) bool {
+		return !utils.Contains(forbiddenAnnotationKeys, key)
 	})
+}
 
-	return filtered
+func (i HTMLIngress) SafeLabels() map[string]string {
+	forbiddenLabelKeys := []string{}
+
+	return utils.FilterM(i.Labels, func(key, value string) bool {
+		return !utils.Contains(forbiddenLabelKeys, key)
+	})
 }
 
 func (i HTMLIngress) Link() string {

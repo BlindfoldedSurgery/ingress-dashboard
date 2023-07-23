@@ -75,7 +75,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{ range $k, $v := .Labels }}
+                {{ range $k, $v := .SafeLabels }}
                 <tr>
                     <td>{{ $k }}</td>
                     <td>{{ $v }}</td>
