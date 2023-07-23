@@ -20,7 +20,7 @@ func (i HTMLIngress) SafeName() string {
 }
 
 func (i HTMLIngress) SafeAnnotations() map[string]string {
-	forbiddenAnnotations := []string{"field.cattle.io/publicEndpoints"}
+	forbiddenAnnotations := []string{"field.cattle.io/publicEndpoints", "kubectl.kubernetes.io/last-applied-configuration"}
 
 	filtered := utils.FilterM(i.Annotations, func(key, value string) bool {
 		return !utils.Contains(forbiddenAnnotations, key)
