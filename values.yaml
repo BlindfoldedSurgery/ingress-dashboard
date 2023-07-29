@@ -2,7 +2,7 @@ namespace: mgmt
 
 deployment:
   name: dashboard
-  image: ghcr.io/torbencarstens/ingress-dashboard:__TAG__
+  image: ghcr.io/blindfoldedsurgery/ingress-dashboard:__TAG__
   imagePullPolicy: IfNotPresent
   revisionHistoryLimit: 1
   replicas: 1
