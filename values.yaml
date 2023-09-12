@@ -33,7 +33,7 @@ service:
 
 ingress:
   hosts:
-    - dashboard.carstens.tech
+    - dashboard.blindfolded.surgery
   secret: tls-dashboard
   issuer: letsencrypt-issuer
   name: dashboard
